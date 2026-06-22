@@ -102,3 +102,8 @@ export const loginUser = async (req, res) => {
 export const getProfile = async (req, res) => {
     res.status(200).json(req.user);
 }
+
+export const getAllUsers = async (req, res) => {
+    const users = await User.find().select("-password");
+    res.status(200).json(users);
+}
