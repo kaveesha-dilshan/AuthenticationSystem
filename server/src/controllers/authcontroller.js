@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import generateToken from "../utils/generateToken.js";
 
 export const registerUser = async (req, res) => {
+    // console.log(req.body);
     try {
         const { name, email, password } = req.body;
 
@@ -106,4 +107,86 @@ export const getProfile = async (req, res) => {
 export const getAllUsers = async (req, res) => {
     const users = await User.find().select("-password");
     res.status(200).json(users);
+}
+
+export const chnagePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+
+        const user = await User.findById(req.user._id);
+
+        const isMatch = await bcrypt.compare(
+            currentPassword,
+            user.password
+        );
+
+        if (!isMatch) {
+            res.status(401)
+            throw new Error("Current password is incorrect");
+            
+
+        }
+
+        const hashedPassword = await bcrypt.hash(
+            newPassword,
+            10
+        )
+
+        user.password = hashedPassword;
+
+        await user.save();
+
+        res.status(200).json({
+            message: "Password updated successfully"
+        })
+
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+export const updateUser = async (req, res) => {
+    try {
+        const { name , email } = req.body;
+
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            res.status(404)
+            throw new Error("User not found");
+        }
+
+        // Check if email is already used by another user
+        if (email && email !== user.email) {
+
+            const emailExists = await User.findOne({ email });
+            if (emailExists) {
+                res.status(400)
+                    throw new Error("Email already in use");
+                }
+            }
+        }
+
+        // Update feilds only if provided
+        user.name = name || user.name;
+        user.email = email || user.email;
+        
+        await user.save();
+
+        res.status(200).json({
+            message: "Profile updated successfully",
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        })
+    }
 }
