@@ -5,7 +5,7 @@ export const errorHandler = (
     next
 ) => {
     const statusCode = 
-        req.statusCode === 200
+        res.statusCode === 200
             ? 500
             : res.statusCode;
     res.status(statusCode).json({

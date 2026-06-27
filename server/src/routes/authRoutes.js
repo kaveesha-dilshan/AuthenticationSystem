@@ -1,5 +1,5 @@
 import express from "express";
-import { registerUser, loginUser, getProfile, getAllUsers, chnagePassword, updateUser } from "../controllers/authcontroller.js";
+import { registerUser, loginUser, getProfile, getAllUsers, chnagePassword, updateUser, forgetPassword } from "../controllers/authcontroller.js";
 import { protect } from "../middleware/authMiddleware.js"
 import { authorize } from "../middleware/roleMiddleware.js";
 import { body } from "express-validator";
@@ -27,6 +27,7 @@ router.post("/login", loginUser);
 router.get("/profile", protect, getProfile);
 router.get("/admin/users", protect, authorize("admin"), getAllUsers);
 router.put("/change-password", protect, chnagePassword);
-router.put("/update", protect, updateUser)  
+router.put("/update", protect, updateUser);
+router.post("/forgetPassword", forgetPassword);
 
 export default router;

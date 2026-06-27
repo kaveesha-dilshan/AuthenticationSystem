@@ -1,6 +1,8 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import generateToken from "../utils/generateToken.js";
+import crypto from "crypto";
+import { error } from "console";
 
 export const registerUser = async (req, res) => {
     // console.log(req.body);
@@ -167,7 +169,7 @@ export const updateUser = async (req, res) => {
                     throw new Error("Email already in use");
                 }
             }
-        }
+        
 
         // Update feilds only if provided
         user.name = name || user.name;
@@ -184,6 +186,40 @@ export const updateUser = async (req, res) => {
                 role: user.role
             }
         })
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+export const forgetPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            res.status(404)
+            throw new Error("User not found");
+        }
+
+        const resetToken = crypto
+            .randomBytes(20)
+            .toString("hex")
+
+        user.resetPasswordToken = resetToken;
+
+        user.resetPasswordExpire = 
+            Date.now() + 10 * 60 * 1000;
+
+        await user.save();
+
+        res.status(200).json({
+            message: "Reset token generated",
+            resetToken
+        })
+
     } catch (error) {
         res.status(500).json({
             message: error.message
